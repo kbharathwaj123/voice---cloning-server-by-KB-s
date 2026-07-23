@@ -21,8 +21,8 @@ Paste text, select any voice sample clip, and generate high-quality narrated aud
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/voice-narrator.git
-cd voice-narrator
+git clone https://github.com/kbharathwaj123/voice---cloning-server-by-KB-s.git
+cd voice---cloning-server-by-KB-s
 ```
 
 ### 2. Set Up Virtual Environment & Dependencies
