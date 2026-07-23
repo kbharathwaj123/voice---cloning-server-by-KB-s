@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voice Narrator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="page-header">
+      <h1>Voice Narrator</h1>
+      <p class="subtitle">Paste text, pick a voice, generate narration — then turn it into a timestamped storyboard.</p>
+    </header>
+
+    <div class="columns-wrapper">
+      <!-- Left Column: Narration -->
+      <main class="panel narration-panel">
+        <h2 class="section-title">1 · Narration</h2>
+
+        <label class="field-label" for="text-input">Text to narrate</label>
+        <textarea
+          id="text-input"
+          placeholder="Paste or type the text you want narrated…"
+          rows="8"
+        ></textarea>
+        <div class="char-count"><span id="char-count">0</span> characters</div>
+
+        <div class="field-label">Voice</div>
+        <p class="hint" style="margin-top: -6px; margin-bottom: 12px;">
+          Select a voice card to listen to its audio preview. Any audio files added to the <code>Samples/</code> folder will automatically appear here.
+        </p>
+        <div id="voice-list" class="voice-list">
+          <p class="voice-loading">Loading voices…</p>
+        </div>
+
+        <button id="generate-btn" disabled>Generate narration</button>
+
+        <div id="generate-status" class="status" hidden></div>
+
+        <div id="progress-container" class="progress-container" hidden>
+          <div class="progress-bar-wrapper">
+            <div id="progress-bar" class="progress-bar"></div>
+          </div>
+          <div id="progress-text" class="progress-text"></div>
+        </div>
+
+        <div id="result" class="result" hidden>
+          <div id="timing-info" class="timing-info"></div>
+          <audio id="audio-player" controls></audio>
+          <div class="action-row">
+            <a id="download-link" class="action-btn download-btn" download="narration.wav">Download Audio</a>
+            <button id="transcribe-narration-btn" class="action-btn transcribe-btn">Transcribe Audio</button>
+          </div>
+
+          <!-- Narration Transcript Container -->
+          <div id="narration-transcript-container" class="sub-transcript-container" hidden>
+            <div id="narration-transcribe-status" class="status" hidden></div>
+            <div id="narration-transcribe-progress-container" class="progress-container" hidden>
+              <div class="progress-bar-wrapper">
+                <div id="narration-transcribe-progress-bar" class="progress-bar"></div>
+              </div>
+              <div id="narration-transcribe-progress-text" class="progress-text"></div>
+            </div>
+            <div id="narration-transcript-result" hidden>
+              <div class="transcript-actions">
+                <button id="copy-narration-transcript-btn">Copy transcript</button>
+                <button id="download-narration-transcript-btn" class="secondary-btn">Download .txt</button>
+              </div>
+              <pre id="narration-transcript-text" class="transcript-text"></pre>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Right Column: Custom Transcript -->
+      <main class="panel custom-transcript-panel">
+        <h2 class="section-title">2 · Custom Transcript</h2>
+        <p class="panel-note">
+          Upload any audio or video file to get a timestamped transcript.
+        </p>
+
+        <div class="upload-row">
+          <label class="upload-dropzone" id="dropzone">
+            <span id="dropzone-label">Drag &amp; drop audio here, or click to browse</span>
+            <input type="file" id="file-input" accept="audio/*,video/*" hidden />
+          </label>
+        </div>
+
+        <button id="transcribe-custom-btn" disabled>Transcribe</button>
+
+        <div id="transcribe-custom-status" class="status" hidden></div>
+
+        <div id="transcribe-custom-progress-container" class="progress-container" hidden>
+          <div class="progress-bar-wrapper">
+            <div id="transcribe-custom-progress-bar" class="progress-bar"></div>
+          </div>
+          <div id="transcribe-custom-progress-text" class="progress-text"></div>
+        </div>
+
+        <div id="custom-transcript-result" class="transcript-result" hidden>
+          <div class="transcript-actions">
+            <button id="copy-custom-transcript-btn">Copy transcript</button>
+            <button id="download-custom-transcript-btn" class="secondary-btn">Download .txt</button>
+          </div>
+          <pre id="custom-transcript-text" class="transcript-text"></pre>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "voice-1",
+    "label": "Adam — Distinct, Deep & Engaging",
+    "samplePath": "Samples/voice_preview_adam - distinct, deep and engaging.mp3",
+    "exaggeration": 0.5
+  },
+  {
+    "id": "voice-2",
+    "label": "Brian — Clean, Professional & Balanced",
+    "samplePath": "Samples/voice_preview_brian - clean, professional and balanced.mp3",
+    "exaggeration": 0.5
+  },
+  {
+    "id": "voice-3",
+    "label": "Brian — Deep, Resonant & Comforting",
+    "samplePath": "Samples/voice_preview_brian - deep, resonant and comforting.mp3",
+    "exaggeration": 0.5
+  },
+  {
+    "id": "voice-4",
+    "label": "Marcus — Classic Audiobook Narrator",
+    "samplePath": "Samples/voice_preview_marcus - classic audiobook narrator.mp3",
+    "exaggeration": 0.5
+  },
+  {
+    "id": "voice-5",
+    "label": "Bella — Professional, Bright & Warm",
+    "samplePath": "Samples/voice_preview_bella - professional, bright, warm.mp3",
+    "exaggeration": 0.5
+  }
+]

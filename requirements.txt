@@ -1,0 +1,16 @@
+flask
+chatterbox-tts
+torch
+torchaudio
+faster-whisper
+python-dotenv
+
+# Notes:
+# - If you have an NVIDIA GPU, install the CUDA build of torch/torchaudio
+#   from https://pytorch.org/get-started/locally/ BEFORE this file, then
+#   comment out the torch/torchaudio lines above so pip doesn't overwrite them.
+# - CPU-only works with the lines above as-is, just slower per generation.
+# - faster-whisper handles audio decoding itself (via PyAV) — no separate
+#   ffmpeg install needed for transcription.
+# - google-genai is Google's official Gemini API client, used only for
+#   turning transcript lines into image prompts (needs GEMINI_API_KEY).
