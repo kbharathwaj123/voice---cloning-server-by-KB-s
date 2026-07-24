@@ -42,7 +42,25 @@ print(f"Loading Chatterbox on {device} (first run downloads model weights)...")
 tts_model = ChatterboxTTS.from_pretrained(device=device)
 print("Chatterbox ready.")
 
+import sys
+from unittest.mock import MagicMock
+
+# Bypass PyAV DLL AppControl policy block on Windows
+sys.modules['av'] = MagicMock()
+sys.modules['av.audio'] = MagicMock()
+sys.modules['av.audio.codeccontext'] = MagicMock()
+
 whisper_model = None  # loaded lazily on first transcription request
+
+
+def load_audio_for_whisper(audio_path, target_sr=16000):
+    waveform, sr = torchaudio.load(str(audio_path))
+    if sr != target_sr:
+        resampler = torchaudio.transforms.Resample(sr, target_sr)
+        waveform = resampler(waveform)
+    if waveform.shape[0] > 1:
+        waveform = torch.mean(waveform, dim=0, keepdim=True)
+    return waveform.squeeze(0).numpy()
 
 
 def get_whisper_model():
@@ -50,9 +68,16 @@ def get_whisper_model():
     if whisper_model is None:
         from faster_whisper import WhisperModel
         size = os.environ.get("WHISPER_MODEL", "small")
-        compute_type = "float16" if device == "cuda" else "int8"
-        print(f"Loading faster-whisper ({size}, {compute_type})...")
-        whisper_model = WhisperModel(size, device=device, compute_type=compute_type)
+        target_device = device
+        compute_type = "float16" if target_device == "cuda" else "int8"
+
+        try:
+            print(f"Loading faster-whisper ({size}, device={target_device}, compute_type={compute_type})...")
+            whisper_model = WhisperModel(size, device=target_device, compute_type=compute_type)
+        except Exception as err:
+            print(f"CUDA/DLL error loading Whisper on {target_device}: {err}. Falling back to CPU...")
+            whisper_model = WhisperModel(size, device="cpu", compute_type="int8")
+
         print("faster-whisper ready.")
     return whisper_model
 
@@ -299,7 +324,8 @@ def transcribe():
 
     try:
         model_w = get_whisper_model()
-        segments, info = model_w.transcribe(str(audio_path), word_timestamps=True)
+        audio_np = load_audio_for_whisper(audio_path)
+        segments, info = model_w.transcribe(audio_np, word_timestamps=True)
         segments = list(segments)
 
         words = []
