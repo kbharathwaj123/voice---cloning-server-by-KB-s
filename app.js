@@ -358,11 +358,20 @@ function formatTimestamp(seconds) {
   return `${m}:${s}`;
 }
 
+function getTranscribeSpeedFactor() {
+  let factor = parseFloat(localStorage.getItem("antigravity_transcribe_speed_factor"));
+  if (isNaN(factor) || factor <= 0 || factor > 0.8) {
+    factor = 0.25;
+    localStorage.setItem("antigravity_transcribe_speed_factor", "0.25");
+  }
+  return factor;
+}
+
 // --- Narration Transcription Actions ---
 function startNarrationTranscribeProgressTimer(duration) {
   if (narrationTranscribeCountdownInterval) clearInterval(narrationTranscribeCountdownInterval);
   
-  const speedFactor = parseFloat(localStorage.getItem("antigravity_transcribe_speed_factor")) || 0.3;
+  const speedFactor = getTranscribeSpeedFactor();
   const totalSeconds = duration > 0 ? duration * speedFactor : 10;
   
   narrationTranscribeProgressBar.style.width = "0%";
@@ -414,8 +423,8 @@ function stopNarrationTranscribeProgressTimer(success, duration, timeTaken) {
     narrationTranscribeProgressBar.style.width = "100%";
     narrationTranscribeProgressBar.style.background = "var(--teal)";
     if (timeTaken && duration > 0) {
-      const speed = timeTaken / duration;
-      localStorage.setItem("antigravity_transcribe_speed_factor", speed);
+      const speed = Math.max(0.05, Math.min(0.8, timeTaken / duration));
+      localStorage.setItem("antigravity_transcribe_speed_factor", speed.toString());
     }
     narrationTranscribeProgressText.innerHTML = `<span>Transcription complete!</span>`;
   } else {
@@ -497,7 +506,7 @@ downloadNarrationTranscriptBtn.addEventListener("click", () => {
 function startCustomTranscribeProgressTimer(duration) {
   if (customTranscribeCountdownInterval) clearInterval(customTranscribeCountdownInterval);
   
-  const speedFactor = parseFloat(localStorage.getItem("antigravity_transcribe_speed_factor")) || 0.3;
+  const speedFactor = getTranscribeSpeedFactor();
   const totalSeconds = duration > 0 ? duration * speedFactor : 10;
   
   transcribeCustomProgressBar.style.width = "0%";
@@ -549,8 +558,8 @@ function stopCustomTranscribeProgressTimer(success, duration, timeTaken) {
     transcribeCustomProgressBar.style.width = "100%";
     transcribeCustomProgressBar.style.background = "var(--teal)";
     if (timeTaken && duration > 0) {
-      const speed = timeTaken / duration;
-      localStorage.setItem("antigravity_transcribe_speed_factor", speed);
+      const speed = Math.max(0.05, Math.min(0.8, timeTaken / duration));
+      localStorage.setItem("antigravity_transcribe_speed_factor", speed.toString());
     }
     transcribeCustomProgressText.innerHTML = `<span>Transcription complete!</span>`;
   } else {
