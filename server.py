@@ -166,6 +166,35 @@ def chunk_text_for_tts(text, max_len=MAX_CHUNK_CHARS):
     return chunks
 
 
+def get_chunk_inflection_and_pause(chunk, base_exaggeration=0.5, sr=24000):
+    text = chunk.strip()
+    pause_sec = 0.25
+    exaggeration = base_exaggeration
+
+    if text.endswith("?"):
+        # Question: higher pitch inflection + distinct 0.40s stop
+        exaggeration = min(1.0, base_exaggeration + 0.25)
+        pause_sec = 0.40
+    elif text.endswith("!"):
+        # Exclamation: energetic inflection + 0.30s stop
+        exaggeration = min(1.0, base_exaggeration + 0.30)
+        pause_sec = 0.30
+    elif text.endswith("..."):
+        # Ellipsis: thoughtful trailing pause
+        exaggeration = max(0.2, base_exaggeration - 0.10)
+        pause_sec = 0.50
+    elif text.endswith(","):
+        # Comma: short clause break
+        exaggeration = base_exaggeration
+        pause_sec = 0.18
+    else:
+        exaggeration = base_exaggeration
+
+    pause_samples = int(sr * pause_sec)
+    silence = torch.zeros((1, pause_samples), dtype=torch.float32)
+    return exaggeration, silence
+
+
 @app.route("/")
 def index():
     return send_from_directory(".", "index.html")
@@ -220,17 +249,25 @@ def generate():
     try:
         chunks = chunk_text_for_tts(text)
         wav_parts = []
-        for chunk in chunks:
+        base_exag = voice.get("exaggeration", 0.5)
+
+        for idx, chunk in enumerate(chunks):
+            chunk_exag, silence_tensor = get_chunk_inflection_and_pause(
+                chunk, base_exaggeration=base_exag, sr=tts_model.sr
+            )
             wav = tts_model.generate(
                 text=chunk,
                 audio_prompt_path=str(sample_path),
-                exaggeration=voice.get("exaggeration", 0.5),
+                exaggeration=chunk_exag,
             )
             # Peak normalize the chunk to keep volume consistent across sentence splits
             max_val = torch.max(torch.abs(wav))
             if max_val > 0:
                 wav = wav * (0.9 / max_val)
+
             wav_parts.append(wav)
+            if idx < len(chunks) - 1:
+                wav_parts.append(silence_tensor)
 
         full_wav = torch.cat(wav_parts, dim=-1) if len(wav_parts) > 1 else wav_parts[0]
 
