@@ -181,6 +181,16 @@ function estimateChunks(text) {
   return chunks.length;
 }
 
+const activeProgressUpdateFns = new Set();
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    activeProgressUpdateFns.forEach((fn) => {
+      try { fn(); } catch (e) {}
+    });
+  }
+});
+
 function startProgressTimer(text) {
   if (countdownInterval) clearInterval(countdownInterval);
   
@@ -196,9 +206,9 @@ function startProgressTimer(text) {
   
   progressContainer.hidden = false;
   
-  let elapsed = 0;
+  const startTime = Date.now();
   function updateProgress() {
-    elapsed += 1;
+    const elapsed = (Date.now() - startTime) / 1000;
     const remaining = Math.max(0, totalSeconds - elapsed);
     
     let percentage;
@@ -221,6 +231,7 @@ function startProgressTimer(text) {
   }
   
   updateProgress();
+  activeProgressUpdateFns.add(updateProgress);
   countdownInterval = setInterval(updateProgress, 1000);
 }
 
@@ -229,6 +240,7 @@ function stopProgressTimer(success, text, timeTaken) {
     clearInterval(countdownInterval);
     countdownInterval = null;
   }
+  activeProgressUpdateFns.clear();
   
   if (success && timeTaken && text) {
     progressBar.style.width = "100%";
@@ -383,9 +395,9 @@ function startNarrationTranscribeProgressTimer(duration) {
   
   narrationTranscribeProgressContainer.hidden = false;
   
-  let elapsed = 0;
+  const startTime = Date.now();
   function updateProgress() {
-    elapsed += 1;
+    const elapsed = (Date.now() - startTime) / 1000;
     const remaining = Math.max(0, totalSeconds - elapsed);
     
     let percentage;
@@ -408,6 +420,7 @@ function startNarrationTranscribeProgressTimer(duration) {
   }
   
   updateProgress();
+  activeProgressUpdateFns.add(updateProgress);
   narrationTranscribeCountdownInterval = setInterval(updateProgress, 1000);
 }
 
@@ -416,6 +429,7 @@ function stopNarrationTranscribeProgressTimer(success, duration, timeTaken) {
     clearInterval(narrationTranscribeCountdownInterval);
     narrationTranscribeCountdownInterval = null;
   }
+  activeProgressUpdateFns.clear();
   
   narrationTranscribeProgressBar.style.transition = "none";
   if (success) {
@@ -518,9 +532,9 @@ function startCustomTranscribeProgressTimer(duration) {
   
   transcribeCustomProgressContainer.hidden = false;
   
-  let elapsed = 0;
+  const startTime = Date.now();
   function updateProgress() {
-    elapsed += 1;
+    const elapsed = (Date.now() - startTime) / 1000;
     const remaining = Math.max(0, totalSeconds - elapsed);
     
     let percentage;
@@ -543,6 +557,7 @@ function startCustomTranscribeProgressTimer(duration) {
   }
   
   updateProgress();
+  activeProgressUpdateFns.add(updateProgress);
   customTranscribeCountdownInterval = setInterval(updateProgress, 1000);
 }
 
@@ -551,6 +566,7 @@ function stopCustomTranscribeProgressTimer(success, duration, timeTaken) {
     clearInterval(customTranscribeCountdownInterval);
     customTranscribeCountdownInterval = null;
   }
+  activeProgressUpdateFns.clear();
   
   transcribeCustomProgressBar.style.transition = "none";
   if (success) {
