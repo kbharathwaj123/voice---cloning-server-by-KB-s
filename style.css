@@ -79,21 +79,28 @@ body {
 }
 
 .language-select {
-  background: var(--ink-card);
-  color: var(--paper);
-  border: 1px solid var(--line);
+  background-color: #141722;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   padding: 6px 12px;
   font-family: 'Inter', sans-serif;
   font-size: 0.85rem;
   cursor: pointer;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .language-select:focus,
 .language-select:hover {
   border-color: var(--amber);
+  background-color: #1a1e2b;
+}
+
+.language-select option {
+  background-color: #141722;
+  color: #ffffff;
+  padding: 10px;
 }
 
 .panel-note {
