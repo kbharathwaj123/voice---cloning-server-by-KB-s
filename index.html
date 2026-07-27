@@ -18,16 +18,42 @@
       <main class="panel narration-panel">
         <h2 class="section-title">1 · Narration</h2>
 
-        <label class="field-label" for="text-input">Text to narrate</label>
+        <div class="field-header-row">
+          <label class="field-label" for="text-input" style="margin-bottom: 0;">Text to narrate</label>
+          <div class="language-selector-wrapper">
+            <label for="language-select" class="lang-select-label">Language:</label>
+            <select id="language-select" class="language-select">
+              <option value="auto">Auto-Detect (100+ Languages)</option>
+              <option value="en">English</option>
+              <option value="hi">Hindi (हिंदी)</option>
+              <option value="es">Spanish (Español)</option>
+              <option value="fr">French (Français)</option>
+              <option value="de">German (Deutsch)</option>
+              <option value="te">Telugu (తెలుగు)</option>
+              <option value="ta">Tamil (தமிழ்)</option>
+              <option value="bn">Bengali (বাংলা)</option>
+              <option value="mr">Marathi (मराठी)</option>
+              <option value="kn">Kannada (ಕನ್ನಡ)</option>
+              <option value="ml">Malayalam (മലയാളം)</option>
+              <option value="gu">Gujarati (ગુજરાતી)</option>
+              <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+              <option value="ja">Japanese (日本語)</option>
+              <option value="ru">Russian (Русский)</option>
+              <option value="ar">Arabic (العربية)</option>
+              <option value="zh">Chinese (中文)</option>
+            </select>
+          </div>
+        </div>
+
         <textarea
           id="text-input"
-          placeholder="Paste or type the text you want narrated…"
+          placeholder="Paste or type the text you want narrated in any language…"
           rows="8"
         ></textarea>
         <div class="char-count"><span id="char-count">0</span> characters</div>
 
         <div class="sample-prompts">
-          <span class="sample-prompt-label">Quick Prompts:</span>
+          <span class="sample-prompt-label">Quick Sample Prompts:</span>
           <button type="button" class="sample-prompt-btn" data-prompt="en">English</button>
           <button type="button" class="sample-prompt-btn" data-prompt="hi">Hindi (हिंदी)</button>
           <button type="button" class="sample-prompt-btn" data-prompt="es">Spanish (Español)</button>

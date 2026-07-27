@@ -2,6 +2,7 @@
 
 const textInput = document.getElementById("text-input");
 const charCount = document.getElementById("char-count");
+const languageSelect = document.getElementById("language-select");
 const voiceList = document.getElementById("voice-list");
 const generateBtn = document.getElementById("generate-btn");
 const generateStatus = document.getElementById("generate-status");
@@ -37,6 +38,7 @@ const samplePrompts = {
 document.querySelectorAll(".sample-prompt-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     const lang = btn.dataset.prompt;
+    if (languageSelect) languageSelect.value = lang;
     if (samplePrompts[lang]) {
       textInput.value = samplePrompts[lang];
       charCount.textContent = textInput.value.length;
@@ -44,6 +46,17 @@ document.querySelectorAll(".sample-prompt-btn").forEach((btn) => {
     }
   });
 });
+
+if (languageSelect) {
+  languageSelect.addEventListener("change", () => {
+    const lang = languageSelect.value;
+    if (samplePrompts[lang] && (!textInput.value || textInput.value.trim() === "")) {
+      textInput.value = samplePrompts[lang];
+      charCount.textContent = textInput.value.length;
+      updateGenerateState();
+    }
+  });
+}
 
 function showStatus(el, message, type) {
   el.textContent = message;
@@ -289,7 +302,11 @@ generateBtn.addEventListener("click", async () => {
     const res = await fetch("/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ voiceId: selectedVoiceId, text: textVal }),
+      body: JSON.stringify({
+        voiceId: selectedVoiceId,
+        text: textVal,
+        language: languageSelect ? languageSelect.value : "auto"
+      }),
     });
 
     const data = await res.json();
