@@ -27,6 +27,24 @@ textInput.addEventListener("input", () => {
   updateGenerateState();
 });
 
+const samplePrompts = {
+  en: "In the Theatre of Life, we are all actors sharing the same scene. Have you ever wondered what story we are truly writing?",
+  hi: "जीवन के इस मंच पर, हम सभी एक ही कहानी के पात्र हैं। क्या आपने कभी सोचा है कि हम कौन सा अध्याय लिख रहे हैं?",
+  es: "En el teatro de la vida, todos somos actores en la misma escena. ¿Alguna vez te has preguntado qué historia estamos escribiendo realmente?",
+  fr: "Dans le théâtre de la vie, nous sommes tous des acteurs sur la même scène. Vous êtes-vous déjà demandé quelle histoire nous écrivons vraiment ?"
+};
+
+document.querySelectorAll(".sample-prompt-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const lang = btn.dataset.prompt;
+    if (samplePrompts[lang]) {
+      textInput.value = samplePrompts[lang];
+      charCount.textContent = textInput.value.length;
+      updateGenerateState();
+    }
+  });
+});
+
 function showStatus(el, message, type) {
   el.textContent = message;
   el.className = `status ${type || ""}`;

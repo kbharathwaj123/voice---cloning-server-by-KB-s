@@ -24,6 +24,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_file, send_from_directory
 
 from chatterbox.tts import ChatterboxTTS
+from anyascii import anyascii
 
 load_dotenv()
 
@@ -153,7 +154,7 @@ def load_voices():
 # ---------- Step 1: text -> narrated audio ----------
 
 def chunk_text_for_tts(text, max_len=MAX_CHUNK_CHARS):
-    sentences = re.findall(r"[^.!?]+[.!?]*\s*", text) or [text]
+    sentences = re.findall(r"[^.!?।]+[.!?।]*\s*", text) or [text]
     chunks, current = [], ""
     for sentence in sentences:
         if current and len(current) + len(sentence) > max_len:
@@ -252,11 +253,13 @@ def generate():
         base_exag = voice.get("exaggeration", 0.5)
 
         for idx, chunk in enumerate(chunks):
+            # Universal transliteration for non-English scripts (Hindi, Spanish, French, German, Japanese, Telugu, Tamil, etc.)
+            romanized_chunk = anyascii(chunk)
             chunk_exag, silence_tensor = get_chunk_inflection_and_pause(
-                chunk, base_exaggeration=base_exag, sr=tts_model.sr
+                romanized_chunk, base_exaggeration=base_exag, sr=tts_model.sr
             )
             wav = tts_model.generate(
-                text=chunk,
+                text=romanized_chunk,
                 audio_prompt_path=str(sample_path),
                 exaggeration=chunk_exag,
             )

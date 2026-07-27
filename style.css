@@ -72,6 +72,37 @@ body {
   line-height: 1.4;
 }
 
+.sample-prompts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  margin-bottom: 20px;
+}
+
+.sample-prompt-label {
+  font-size: 0.78rem;
+  color: var(--paper-dim);
+}
+
+.sample-prompt-btn {
+  background: var(--ink-card);
+  color: var(--paper-dim);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.sample-prompt-btn:hover {
+  border-color: var(--amber);
+  color: var(--paper);
+}
+
 .upload-row {
   display: flex;
   gap: 12px;
