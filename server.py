@@ -12,18 +12,34 @@ No paid APIs. First run downloads model weights (Chatterbox + Whisper) from
 the internet once, then everything runs offline except the Gemini calls.
 """
 
+import sys
+import ctypes
+from unittest.mock import MagicMock
+
+# Intercept ctypes.CDLL to safely bypass Windows Application Control policy DLL blocks for llvmlite and av
+orig_cdll = ctypes.CDLL
+
+def custom_cdll(name, *args, **kwargs):
+    str_name = str(name).lower()
+    if "llvmlite" in str_name or "av" in str_name:
+        return MagicMock()
+    return orig_cdll(name, *args, **kwargs)
+
+ctypes.CDLL = custom_cdll
+
+# Bypass PyAV sys.modules block on Windows
+sys.modules['av'] = MagicMock()
+sys.modules['av.audio'] = MagicMock()
+sys.modules['av.audio.codeccontext'] = MagicMock()
+
 import json
 import os
 import re
 import uuid
 from pathlib import Path
 
-import torch
-import torchaudio
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_file, send_from_directory
-
-from chatterbox.tts import ChatterboxTTS
 from anyascii import anyascii
 
 load_dotenv()
@@ -37,19 +53,24 @@ MAX_CHUNK_CHARS = 250  # keep TTS chunks short — long single generations degra
 
 app = Flask(__name__, static_folder=".", static_url_path="")
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+tts_model = None
 
-print(f"Loading Chatterbox on {device} (first run downloads model weights)...")
-tts_model = ChatterboxTTS.from_pretrained(device=device)
-print("Chatterbox ready.")
 
-import sys
-from unittest.mock import MagicMock
+def get_tts_model():
+    global tts_model
+    if tts_model is None:
+        import torch
+        from chatterbox.tts import ChatterboxTTS
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"Loading Chatterbox on {device}...", flush=True)
+        cache_dir = Path.home() / ".cache" / "huggingface" / "hub" / "models--ResembleAI--chatterbox" / "snapshots" / "5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18"
+        if cache_dir.exists():
+            tts_model = ChatterboxTTS.from_local(cache_dir, device=device)
+        else:
+            tts_model = ChatterboxTTS.from_pretrained(device=device)
+        print("Chatterbox ready.", flush=True)
+    return tts_model
 
-# Bypass PyAV DLL AppControl policy block on Windows
-sys.modules['av'] = MagicMock()
-sys.modules['av.audio'] = MagicMock()
-sys.modules['av.audio.codeccontext'] = MagicMock()
 
 whisper_model = None  # loaded lazily on first transcription request
 
@@ -192,6 +213,7 @@ def get_chunk_inflection_and_pause(chunk, base_exaggeration=0.5, sr=24000):
         exaggeration = base_exaggeration
 
     pause_samples = int(sr * pause_sec)
+    import torch
     silence = torch.zeros((1, pause_samples), dtype=torch.float32)
     return exaggeration, silence
 
@@ -246,8 +268,10 @@ def generate():
         ), 400
 
     import time
+    import torchaudio
     start_time = time.time()
     try:
+        model_tts = get_tts_model()
         chunks = chunk_text_for_tts(text)
         wav_parts = []
         base_exag = voice.get("exaggeration", 0.5)
@@ -256,9 +280,9 @@ def generate():
             # Universal transliteration for non-English scripts (Hindi, Spanish, French, German, Japanese, Telugu, Tamil, etc.)
             romanized_chunk = anyascii(chunk)
             chunk_exag, silence_tensor = get_chunk_inflection_and_pause(
-                romanized_chunk, base_exaggeration=base_exag, sr=tts_model.sr
+                romanized_chunk, base_exaggeration=base_exag, sr=model_tts.sr
             )
-            wav = tts_model.generate(
+            wav = model_tts.generate(
                 text=romanized_chunk,
                 audio_prompt_path=str(sample_path),
                 exaggeration=chunk_exag,
@@ -276,10 +300,10 @@ def generate():
 
         file_name = f"{uuid.uuid4()}.wav"
         out_path = TMP_DIR / file_name
-        torchaudio.save(str(out_path), full_wav, tts_model.sr)
+        torchaudio.save(str(out_path), full_wav, model_tts.sr)
 
         time_taken = time.time() - start_time
-        audio_duration = full_wav.shape[-1] / tts_model.sr
+        audio_duration = full_wav.shape[-1] / model_tts.sr
 
         return jsonify({
             "audioUrl": f"/api/audio/{file_name}", 
